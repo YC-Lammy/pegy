@@ -1,0 +1,25 @@
+[package]
+name = "pegy-derive"
+version = "0.1.0"
+edition = "2021"
+authors = [ "YC Lam" ]
+license = "MIT"
+repository = "https://github.com/YC-Lammy/pegy"
+description = "A derive based parser generator."
+keywords = ["peg", "parser", "parsing", "grammar"]
+categories = ["parsing"]
+documentation = "https://docs.rs/pegy"
+readme = "README.md"
+rust-version = "1.75"
+
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+proc-macro = true
+
+[dependencies]
+syn = {version="^2", features=["full"]}
+proc-macro2 = "^1.0.69"
+quote = "^1"
+itoa = "^1"

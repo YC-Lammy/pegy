@@ -55,7 +55,7 @@ pub fn main(){
 
 ### Special
 - `$ident:term` - field binding: bind the result of the term to the field `ident` of result.
-- `( alternatives )` - group: matches the terms and returns a tuple of results.
+- `( alternatives )` - group: matches the terms and returns a `Span`.
 - `terms | terms | terms` - alternatives: trys to match the first terms, if failed, matches the second one and so on until a match is found.
 - `!term` - negative lookahead: matches the term without consuming any characters.
 - `_ term` - quiet: matches the term and returns `()`.

@@ -1,5 +1,7 @@
 use core::ops::RangeInclusive;
 
+use alloc::vec::Vec;
+
 const CONT_MASK: u8 = 0x3F;
 
     /// Returns the initial codepoint accumulator for the first byte.

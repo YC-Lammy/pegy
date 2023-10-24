@@ -6,6 +6,7 @@
 - parse input from str, async readers or custom input types.
 - AST generation on the run
 - meaningful error messages for errors in grammar definition
+- supports no_std
 
 ## MSRV
 The current MSRV supported is 1.75

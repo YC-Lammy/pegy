@@ -1,6 +1,6 @@
 [package]
 name = "pegy"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 authors = [ "YC Lam" ]
 license = "MIT"
@@ -15,7 +15,7 @@ rust-version = "1.75"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-pegy-derive = "0.1.0"
+pegy-derive = "0.1.1"
 futures = {version="^0.3", optional=true}
 
 [features]

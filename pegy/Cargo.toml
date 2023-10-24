@@ -9,7 +9,7 @@ description = "A derive based parser generator."
 keywords = ["peg", "parser", "parsing", "grammar"]
 categories = ["parsing"]
 documentation = "https://docs.rs/pegy"
-readme = "README.md"
+readme = "../README.md"
 rust-version = "1.75"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html

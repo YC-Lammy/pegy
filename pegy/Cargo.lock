@@ -111,7 +111,7 @@ checksum = "f665ee40bc4a3c5590afb1e9677db74a508659dfd71e126420da8274909a0167"
 
 [[package]]
 name = "pegy"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "futures",
  "pegy-derive",
@@ -119,9 +119,9 @@ dependencies = [
 
 [[package]]
 name = "pegy-derive"
-version = "0.1.0"
+version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3ecad5cbf5a5d0a83a0998caa2c85b85a453404b0eb4178ef4d6b5afd534d38e"
+checksum = "5474dce3c872235cbd87e38359fd0c47ad83295d32567e04e63f059603f2e5e6"
 dependencies = [
  "itoa",
  "proc-macro2",

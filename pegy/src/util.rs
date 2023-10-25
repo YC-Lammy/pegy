@@ -19,6 +19,20 @@ impl Parse for EOF{
 }
 
 #[derive(Debug, Default, PartialEq, Eq, Hash)]
+pub struct SOF;
+
+impl Parse for SOF{
+    type Output = ();
+    async fn parse<S:crate::Source>(src: &mut S) -> Result<Self::Output, Error> {
+        if src.current_position() != 0{
+            let pos = src.current_position();
+            return Err(Error::new(Span::new(pos, pos), "expected EOF"));
+        }
+        return Ok(())
+    }
+}
+
+#[derive(Debug, Default, PartialEq, Eq, Hash)]
 pub struct MatchChar<const CH: char>;
 
 impl<const CH:char> Parse for MatchChar<CH>{

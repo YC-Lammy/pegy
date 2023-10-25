@@ -1,5 +1,9 @@
 # Pegy - derive based Parser in Rust
 
+[![Docs](https://docs.rs/pegy/badge.svg)](https://docs.rs/pegy)
+[![Crates.io](https://img.shields.io/crates/v/pegy)](https://crates.io/crates/pegy)
+[![Crates.io](https://img.shields.io/crates/d/pegy)](https://crates.io/crates/pegy)
+
 ## Features
 - derive based parser generation
 - async api for parsing

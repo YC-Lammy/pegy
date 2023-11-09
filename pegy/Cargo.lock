@@ -217,9 +217,9 @@ dependencies = [
 
 [[package]]
 name = "pegy-derive"
-version = "0.1.1"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5474dce3c872235cbd87e38359fd0c47ad83295d32567e04e63f059603f2e5e6"
+checksum = "2eedd0ace998ae89004bc495a861a6c8601ecf9e1664a2349b88ca65878542ba"
 dependencies = [
  "itoa",
  "proc-macro2",

@@ -15,7 +15,7 @@ rust-version = "1.75"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-pegy-derive = "0.1.1"
+pegy-derive = "0.1.2"
 futures = {version="^0.3", optional=true}
 
 itoa = "1"

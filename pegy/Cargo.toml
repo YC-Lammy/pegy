@@ -1,6 +1,6 @@
 [package]
 name = "pegy"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 authors = [ "YC Lam" ]
 license = "MIT"
@@ -18,6 +18,17 @@ rust-version = "1.75"
 pegy-derive = "0.1.1"
 futures = {version="^0.3", optional=true}
 
+itoa = "1"
+fast-float = "0.2"
+
+[dev-dependencies]
+lexical-core = "0.7"
+hexf-parse = "0.1"
+ryu = "1.0"
+fastrand = "1.4"
+num-bigint = "0.3"
+
 [features]
-default = ["futures"]
+default = ["futures", "unicode"]
 futures = ["dep:futures"]
+unicode = []

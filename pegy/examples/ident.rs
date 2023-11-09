@@ -12,7 +12,7 @@ pub struct Digit(char);
 #[grammar(!Digit $item0:AlphaDigit+)]
 pub struct Ident(Vec<AlphaDigit>);
 
-pub fn main(){
-    let re:pegy::Result<Ident> = pegy::parse_blocking::<Ident, _>("myIdent");
+pub fn main() {
+    let re: pegy::Result<Ident> = pegy::parse_blocking::<Ident, _>("myIdent");
     assert!(re.is_ok());
 }

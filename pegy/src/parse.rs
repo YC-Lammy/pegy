@@ -57,3 +57,10 @@ impl<T: Parse> Parse for Option<T> {
         return Ok(None);
     }
 }
+
+impl Parse for () {
+    type Output = ();
+    async fn parse<S: Source>(_src: &mut S) -> Result<Self::Output, Error> {
+        return Ok(());
+    }
+}

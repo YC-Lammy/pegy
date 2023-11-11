@@ -294,7 +294,7 @@ impl<T: futures::AsyncRead + Unpin> AsyncStrSource<T> {
         use futures::AsyncReadExt;
 
         if !self.is_eof {
-            let mut buf: [u8; 128] = unsafe { core::mem::MaybeUninit::uninit().assume_init() };
+            let mut buf: [u8; 512] = unsafe { core::mem::MaybeUninit::uninit().assume_init() };
 
             match self.reader.read(&mut buf).await {
                 Ok(l) => {

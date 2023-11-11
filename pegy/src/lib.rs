@@ -4,6 +4,7 @@ mod error;
 mod float;
 mod integer;
 mod parse;
+pub mod pratt;
 mod source;
 pub mod util;
 

@@ -4,6 +4,8 @@ use proc_macro2::{Punct, Spacing, TokenStream, TokenTree};
 use quote::{ToTokens, TokenStreamExt};
 
 mod grammar;
+mod ast;
+mod ast_transform;
 
 #[proc_macro_derive(Parse, attributes(grammar))]
 pub fn parse_derive(stream: proc_macro::TokenStream) -> proc_macro::TokenStream {

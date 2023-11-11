@@ -17,6 +17,7 @@ rust-version = "1.75"
 [dependencies]
 pegy-derive = "0.1.2"
 futures = {version="^0.3", optional=true}
+unicode-ident = {version="^1", optional=true}
 
 itoa = "1"
 fast-float = "0.2"
@@ -27,8 +28,11 @@ hexf-parse = "0.1"
 ryu = "1.0"
 fastrand = "1.4"
 num-bigint = "0.3"
+reqwest = {version = "0.11", features=["stream"]}
+simd-json = "0.13"
+tokio = "1"
 
 [features]
 default = ["futures", "unicode"]
 futures = ["dep:futures"]
-unicode = []
+unicode = ["dep:unicode-ident"]

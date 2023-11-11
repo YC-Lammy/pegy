@@ -26,7 +26,7 @@ impl Parse for SOF {
     async fn parse<S: crate::Source>(src: &mut S) -> Result<Self::Output, Error> {
         if src.current_position() != 0 {
             let pos = src.current_position();
-            return Err(Error::new(Span::new(pos, pos), "expected EOF"));
+            return Err(Error::new(Span::new(pos, pos), "expected SOF"));
         }
         return Ok(());
     }
@@ -305,6 +305,54 @@ impl Parse for CONTROL {
         return Err(Error::new(
             Span::new(pos, pos),
             "expected control character",
+        ));
+    }
+}
+
+#[cfg(feature = "unicode")]
+#[allow(non_camel_case_types)]
+pub struct UNICODE_ID_START;
+
+#[cfg(feature = "unicode")]
+impl Parse for UNICODE_ID_START {
+    type Output = char;
+    async fn parse<S: crate::Source>(src: &mut S) -> Result<Self::Output, Error> {
+        if let Some(ch) = src.peek().await {
+            if unicode_ident::is_xid_start(ch.ch) {
+                src.set_position(src.current_position() + ch.length);
+                return Ok(ch.ch);
+            }
+        }
+
+        let pos = src.current_position();
+
+        return Err(Error::new(
+            Span::new(pos, pos),
+            "error parsing unicode_id_start",
+        ));
+    }
+}
+
+#[cfg(feature = "unicode")]
+#[allow(non_camel_case_types)]
+pub struct UNICODE_ID_CONTINUE;
+
+#[cfg(feature = "unicode")]
+impl Parse for UNICODE_ID_CONTINUE {
+    type Output = char;
+    async fn parse<S: crate::Source>(src: &mut S) -> Result<Self::Output, Error> {
+        if let Some(ch) = src.peek().await {
+            if unicode_ident::is_xid_continue(ch.ch) {
+                src.set_position(src.current_position() + ch.length);
+                return Ok(ch.ch);
+            }
+        }
+
+        let pos = src.current_position();
+
+        return Err(Error::new(
+            Span::new(pos, pos),
+            "error parsing unicode_id_start",
         ));
     }
 }

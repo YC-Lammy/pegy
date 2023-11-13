@@ -1,3 +1,5 @@
+#![cfg_attr(feature = "simd", feature(portable_simd))]
+
 extern crate alloc;
 
 mod error;
@@ -16,6 +18,10 @@ pub use pegy_derive::Parse;
 pub use error::{Error, Span};
 pub use parse::Parse;
 pub use source::{AsyncStrSource, Character, IntoSource, Source, StrSource};
+
+pub mod io {
+    pub use crate::source::AsyncStreamRead;
+}
 
 pub type Result<T> = core::result::Result<T, Error>;
 

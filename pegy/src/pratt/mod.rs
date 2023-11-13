@@ -174,9 +174,11 @@ impl<N: Clone, T: crate::Parse> Pratt<N, T> {
         // repeat inffix -> preffix -> primary -> suffix
         loop {
             // only match one inffix
+            let mut has_infix = false;
             for (id, i) in self.inffixes.iter().rev() {
                 let start = src.current_position();
                 if src.match_str(i).await {
+                    has_infix = true;
                     tokens.push(ParsedToken::Inffix(
                         *id,
                         Span::new(start, src.current_position()),
@@ -185,6 +187,12 @@ impl<N: Clone, T: crate::Parse> Pratt<N, T> {
                 }
             }
 
+            // must have infix before next primary expression
+            if !has_infix {
+                break;
+            }
+
+            // parse prefixes
             'prefix: loop {
                 for (id, p) in self.prefixes.iter().rev() {
                     let start = src.current_position();
@@ -197,6 +205,7 @@ impl<N: Clone, T: crate::Parse> Pratt<N, T> {
                 break;
             }
 
+            // parse primary expression
             match T::parse(src).await {
                 Ok(prim) => {
                     tokens.push(ParsedToken::Primary(prim));

@@ -44,6 +44,17 @@ impl<T: Parse> Parse for Recursive<T> {
 }
 
 #[derive(Debug, Default, PartialEq, Eq)]
+pub struct Boxed<T: Parse>(PhantomData<T>);
+
+impl<T: Parse> Parse for Boxed<T> {
+    type Output = Box<T::Output>;
+    async fn parse<S: crate::Source>(src: &mut S) -> Result<Self::Output, Error> {
+        let value = T::parse(src).await?;
+        Ok(Box::new(value))
+    }
+}
+
+#[derive(Debug, Default, PartialEq, Eq)]
 pub struct Repeat<
     T: Parse,
     const MIN: usize = 0,

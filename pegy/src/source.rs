@@ -1,4 +1,5 @@
 use core::ops::RangeInclusive;
+use core::task::Poll;
 
 use alloc::vec::Vec;
 
@@ -71,17 +72,32 @@ pub unsafe fn next_code_point<'a, I: Iterator<Item = &'a u8>>(
     Some((ch, i))
 }
 
+/// a unicode character point with length relative to the `Source`
 pub struct Character {
+    /// character
     pub ch: char,
+    /// length relative to the `Source`
     pub length: usize,
 }
 
 #[allow(async_fn_in_trait)]
 pub trait Source {
+    /// return the current position, positioning can be independent
     fn current_position(&self) -> usize;
+    /// set the position, it is guarantined that the position provided is obtained by calling `self.current_position`
     fn set_position(&mut self, pos: usize);
+    /// return the next character with codepoint and relative length
     async fn peek(&mut self) -> Option<Character>;
-    async fn match_str(&mut self, string: &str) -> bool;
+    async fn match_str(&mut self, string: &str) -> bool {
+        let start = self.current_position();
+        for c in string.chars() {
+            if !self.match_char(c).await {
+                self.set_position(start);
+                return false;
+            }
+        }
+        return true;
+    }
     async fn match_char(&mut self, ch: char) -> bool {
         if let Some(c) = self.peek().await {
             if c.ch == ch {
@@ -107,6 +123,10 @@ pub trait IntoSource {
     fn into(self) -> Self::Source;
 }
 
+/// A str input source.
+///
+/// It takes in a string slices and iterates over
+/// its characters.
 pub struct StrSource<'a> {
     s: &'a str,
     pos: usize,
@@ -179,6 +199,21 @@ impl<'a> Source for StrSource<'a> {
             return false;
         }
 
+        #[cfg(feature = "simd")]
+        if string.len() >= 32 {
+            let (pre, s, suf) =
+                self.s.as_bytes()[self.pos..self.pos + string.len()].as_simd::<32>();
+            let (s_pre, s_s, s_suf) = string.as_bytes().as_simd::<32>();
+
+            if pre.len() == s_pre.len() && s.len() == s_s.len() && suf.len() == s_suf.len() {
+                if pre == s_pre && s == s_s && suf == s_suf {
+                    self.pos += string.len();
+                    return true;
+                }
+                return false;
+            }
+        }
+
         if (&self.s.as_bytes()[self.pos..self.pos + string.len()]) == string.as_bytes() {
             self.pos += string.len();
             return true;
@@ -188,6 +223,11 @@ impl<'a> Source for StrSource<'a> {
     }
 }
 
+/// An utf8 async input source
+///
+/// It takes in an `AsyncRead` and accumulates the content.
+/// An Eof will be emited once the `AsyncRead` returns an `Error`
+/// or when the next byte is not valid utf8.
 #[cfg(feature = "futures")]
 pub struct AsyncStrSource<T: futures::AsyncRead + Unpin> {
     reader: T,
@@ -353,5 +393,104 @@ impl<T: futures::AsyncRead + Unpin> Source for AsyncStrSource<T> {
         }
 
         return false;
+    }
+}
+
+/// An utility type that converts a `Stream` to `AsyncRead`.
+///
+/// The type acts as a buffer that holds exceeding bytes.
+/// It will first consume its buffer before fetching from
+/// the stream. When the length of bytes fetched from the
+/// stream exceeds the buffer provided by AsyncRead, it will
+/// fill the buffer and push the remaining bytes into its own buffer
+/// to be readed next time.
+#[cfg(feature = "futures")]
+pub struct AsyncStreamRead<
+    S: futures::Stream<Item = Result<B, E>> + Unpin,
+    B: AsRef<[u8]>,
+    E: Into<Box<dyn std::error::Error + Send + Sync>>,
+> {
+    buffer: Vec<u8>,
+    stream: S,
+}
+
+#[cfg(feature = "futures")]
+impl<
+        S: futures::Stream<Item = Result<B, E>> + Unpin,
+        B: AsRef<[u8]>,
+        E: Into<Box<dyn std::error::Error + Send + Sync>>,
+    > AsyncStreamRead<S, B, E>
+{
+    pub const fn new(stream: S) -> Self {
+        Self {
+            buffer: Vec::new(),
+            stream: stream,
+        }
+    }
+}
+
+#[cfg(feature = "futures")]
+impl<
+        S: futures::Stream<Item = Result<B, E>> + Unpin,
+        B: AsRef<[u8]>,
+        E: Into<Box<dyn std::error::Error + Send + Sync>>,
+    > futures::AsyncRead for AsyncStreamRead<S, B, E>
+{
+    fn poll_read(
+        mut self: core::pin::Pin<&mut Self>,
+        cx: &mut core::task::Context<'_>,
+        buf: &mut [u8],
+    ) -> Poll<std::io::Result<usize>> {
+        use futures::Stream;
+
+        if !self.buffer.is_empty() {
+            let buffer_len = self.buffer.len();
+            if buffer_len > buf.len() {
+                // copy from buffer
+                buf.copy_from_slice(&self.buffer[0..buf.len()]);
+                // copy the remain bytes to start
+                self.buffer.copy_within(buf.len().., 0);
+                // resize buffer
+                self.buffer.resize(buffer_len - buf.len(), 0);
+
+                // return copied length
+                return Poll::Ready(Ok(buf.len()));
+            };
+
+            // copy from buffer
+            (&mut buf[0..self.buffer.len()]).copy_from_slice(&self.buffer);
+            // clear buffer
+            self.buffer.clear();
+
+            return Poll::Ready(Ok(buffer_len));
+        }
+
+        let next = Stream::poll_next(core::pin::Pin::new(&mut self.stream), cx);
+
+        match next {
+            Poll::Ready(r) => match r {
+                Some(Ok(bytes)) => {
+                    let mut bytes = bytes.as_ref();
+
+                    if bytes.len() > buf.len() {
+                        self.buffer.extend_from_slice(&bytes[buf.len()..]);
+                        bytes = &bytes[..buf.len()];
+                    };
+
+                    for (i, b) in bytes.iter().enumerate() {
+                        buf[i] = *b;
+                    }
+
+                    return Poll::Ready(Ok(bytes.len()));
+                }
+                Some(Err(e)) => return Poll::Ready(Err(std::io::Error::other(e))),
+                None => {
+                    return Poll::Ready(Err(std::io::Error::from(
+                        std::io::ErrorKind::UnexpectedEof,
+                    )))
+                }
+            },
+            Poll::Pending => return Poll::Pending,
+        }
     }
 }
